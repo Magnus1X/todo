@@ -1,0 +1,71 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  name        String
+  email       String    @unique
+  password    String
+  phone       String?
+  preference  Preference @default(EMAIL)
+  subscription Json?
+  tasks       Task[]
+  notifications Notification[]
+  createdAt   DateTime  @default(now())
+}
+
+model Task {
+  id          Int       @id @default(autoincrement())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+  title       String
+  description String?
+  dueDate     DateTime
+  priority    Priority  @default(MEDIUM)
+  status      Status    @default(PENDING)
+  notifications Notification[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  task      Task     @relation(fields: [taskId], references: [id])
+  taskId    Int
+  message   String
+  status    NotifStatus @default(PENDING)
+  sentAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+enum Preference {
+  EMAIL
+  SMS
+  PUSH
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum Status {
+  PENDING
+  COMPLETED
+  OVERDUE
+}
+
+enum NotifStatus {
+  PENDING
+  SENT
+  DISMISSED
+}
